@@ -17,10 +17,7 @@ function setup() {
     gallery.addVisual(new PayGapTimeSeries());
     gallery.addVisual(new ClimateChange());
 
-    /*
-     * Connect the visualisation dropdown to the
-     * existing Gallery object.
-     */
+    // Connect the visualisation dropdown to the Gallery.
     var graphSelect = document.getElementById('graphSelect');
 
     if (graphSelect) {
@@ -33,21 +30,24 @@ function setup() {
                 gallery.selectVisual(selectedGraph);
             }
         });
+
+        // Select the visualisation shown in the dropdown when
+        // the page first loads.
+        if (graphSelect.value != "") {
+            gallery.selectVisual(graphSelect.value);
+        }
     }
 }
-
 
 function draw() {
 
     background(255);
 
-    /*
-     * Draw the visualisation currently selected
-     * by the Gallery.
-     */
-    if (gallery != null &&
-        gallery.selectedVisual != null) {
-
+    // Draw the currently selected visualisation.
+    if (
+        gallery != null &&
+        gallery.selectedVisual != null
+    ) {
         gallery.selectedVisual.draw();
     }
 }
