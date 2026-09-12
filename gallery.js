@@ -1,106 +1,65 @@
 function Gallery() {
+    this.visuals = [];
+    this.selectedVisual = null;
 
-  this.visuals = [];
-  this.selectedVisual = null;
-  var self = this;
+    this.addVisual = function(vis) {
+        this.visuals.push(vis);
 
+        // Add the visualisation to the original gallery menu.
+        var menuItem = createElement("li", vis.name);
+        menuItem.parent("visuals-menu");
 
-  // Add a new visualisation to the navigation bar.
-  this.addVisual = function(vis) {
+        menuItem.mouseClicked(function() {
+            gallery.selectVisual(vis.id);
+        });
 
-    // Check that the vis object has an id and name.
-    if (!vis.hasOwnProperty('id')
-        && !vis.hasOwnProperty('name')) {
-      alert('Make sure your visualisation has an id and name!');
-    }
+        // Load the data for the visualisation.
+        vis.preload();
+    };
 
-    // Check that the vis object has a unique id.
-    if (this.findVisIndex(vis.id) != null) {
-      alert(`Vis '${vis.name}' has a duplicate id: '${vis.id}'`);
-    }
+    this.selectVisual = function(visId) {
+        // Destroy the currently selected visualisation.
+        if (this.selectedVisual != null &&
+            this.selectedVisual.destroy != undefined) {
 
-    this.visuals.push(vis);
-      
-  
-    // Create menu item.
-    var menuItem = createElement('li', vis.name);
-    menuItem.addClass('menu-item');
-    menuItem.id(vis.id);
-      
-    menuItem.mouseOver(function(e)
-    {
-        
-        var el = select('#' + e.srcElement.id);
-        el.addClass("hover");
-    })
-      
-    menuItem.mouseOut(function(e)
-    {
-        var el = select('#' + e.srcElement.id);
-        el.removeClass("hover");
-    })
-      
-    menuItem.mouseClicked(function(e)
-    {
-        //remove selected class from any other menu-items
-        
-        var menuItems = selectAll('.menu-item');
-        
-        for(var i = 0; i < menuItems.length; i++)
-        {
-            menuItems[i].removeClass('selected');
+            this.selectedVisual.destroy();
         }
-        
-        var el = select('#' + e.srcElement.id);
-        el.addClass('selected');
-        
-        self.selectVisual(e.srcElement.id);
-        
-    })
-      
-      
-    var visMenu = select('#visuals-menu');
-    visMenu.child(menuItem);
 
-    // Preload data if necessary.
-    if (vis.hasOwnProperty('preload')) {
-      vis.preload();
-    }
-  };
+        // Find the requested visualisation.
+        var index = this.findVisIndex(visId);
 
-  this.findVisIndex = function(visId) {
-    // Search through the visualisations looking for one with the id
-    // matching visId.
-    for (var i = 0; i < this.visuals.length; i++) {
-      if (this.visuals[i].id == visId) {
-        return i;
-      }
-    }
+        if (index != -1) {
+            this.selectedVisual = this.visuals[index];
 
-    // Visualisation not found.
-    return null;
-  };
+            // Set up the selected visualisation.
+            if (this.selectedVisual.setup != undefined) {
+                this.selectedVisual.setup();
+            }
+        }
+    };
 
-  this.selectVisual = function(visId){
-    var visIndex = this.findVisIndex(visId);
+    /*
+    NEW: Find a visualisation using its ID. This is used by the new visualisation dropdown in index.html.
+     */
+    this.getVisualById = function(visId) {
+        for (var i = 0; i < this.visuals.length; i++) {
 
-    if (visIndex != null) {
-      // If the current visualisation has a deselect method run it.
-      if (this.selectedVisual != null
-          && this.selectedVisual.hasOwnProperty('destroy')) {
-        this.selectedVisual.destroy();
-      }
-      // Select the visualisation in the gallery.
-      this.selectedVisual = this.visuals[visIndex];
+            if (this.visuals[i].id == visId) {
+                return this.visuals[i];
+            }
+        }
 
-      // Initialise visualisation if necessary.
-      if (this.selectedVisual.hasOwnProperty('setup')) {
-        this.selectedVisual.setup();
-      }
+        return null;
+    };
 
-      // Enable animation in case it has been paused by the current
-      // visualisation.
-      loop();
-    }
-  };
+    this.findVisIndex = function(visId) {
+        for (var i = 0; i < this.visuals.length; i++) {
+
+            if (this.visuals[i].id == visId) {
+                return i;
+            }
+        }
+
+        return -1;
+    };
 }
