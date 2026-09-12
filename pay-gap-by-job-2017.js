@@ -8,7 +8,7 @@ function PayGapByJob2017() {
         var self = this;
 
         this.data = loadTable(
-            "data/pay-gap-by-job-2017.csv",
+            './data/pay-gap/occupation-hourly-pay-by-gender-2017.csv'
             "csv",
             "header",
             function(table) {
