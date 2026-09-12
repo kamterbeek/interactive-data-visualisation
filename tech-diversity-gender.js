@@ -10,7 +10,7 @@ function TechDiversityGender() {
         var self = this;
 
         this.data = loadTable(
-            'data/tech-diversity-gender.csv',
+            './data/tech-diversity/gender-2018.csv'
             'csv',
             'header',
             function(table) {
