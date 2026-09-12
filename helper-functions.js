@@ -1,130 +1,102 @@
-// --------------------------------------------------------------------
-// Data processing helper functions.
-// --------------------------------------------------------------------
 function sum(data) {
-  var total = 0;
+    var total = 0;
 
-  // Ensure that data contains numbers and not strings.
-  data = stringsToNumbers(data);
+    for (var i = 0; i < data.length; i++) {
+        total += data[i];
+    }
 
-  for (let i = 0; i < data.length; i++) {
-    total = total + data[i];
-  }
-
-  return total;
+    return total;
 }
+
 
 function mean(data) {
-  var total = sum(data);
-
-  return total / data.length;
-}
-
-function sliceRowNumbers (row, start=0, end) {
-  var rowData = [];
-
-  if (!end) {
-    // Parse all values until the end of the row.
-    end = row.arr.length;
-  }
-
-  for (i = start; i < end; i++) {
-    rowData.push(row.getNum(i));
-  }
-
-  return rowData;
-}
-
-function stringsToNumbers (array) {
-  return array.map(Number);
-}
-
-// --------------------------------------------------------------------
-// Plotting helper functions
-// --------------------------------------------------------------------
-
-function drawAxis(layout, colour=0) {
-  stroke(color(colour));
-
-  // x-axis
-  line(layout.leftMargin,
-       layout.bottomMargin,
-       layout.rightMargin,
-       layout.bottomMargin);
-
-  // y-axis
-  line(layout.leftMargin,
-       layout.topMargin,
-       layout.leftMargin,
-       layout.bottomMargin);
-}
-
-function drawAxisLabels(xLabel, yLabel, layout) {
-  fill(0);
-  noStroke();
-  textAlign('center', 'center');
-
-  // Draw x-axis label.
-  text(xLabel,
-       (layout.plotWidth() / 2) + layout.leftMargin,
-       layout.bottomMargin + (layout.marginSize * 1.5));
-
-  // Draw y-axis label.
-  push();
-  translate(layout.leftMargin - (layout.marginSize * 1.5),
-            layout.bottomMargin / 2);
-  rotate(- PI / 2);
-  text(yLabel, 0, 0);
-  pop();
-}
-
-function drawYAxisTickLabels(min, max, layout, mapFunction,
-                             decimalPlaces) {
-  // Map function must be passed with .bind(this).
-  var range = max - min;
-  var yTickStep = range / layout.numYTickLabels;
-
-  fill(0);
-  noStroke();
-  textAlign('right', 'center');
-
-  // Draw all axis tick labels and grid lines.
-  for (i = 0; i <= layout.numYTickLabels; i++) {
-    var value = min + (i * yTickStep);
-    var y = mapFunction(value);
-
-    // Add tick label.
-    text(value.toFixed(decimalPlaces),
-         layout.leftMargin - layout.pad,
-         y);
-
-    if (layout.grid) {
-      // Add grid line.
-      stroke(200);
-      line(layout.leftMargin, y, layout.rightMargin, y);
+    if (data.length == 0) {
+        return 0;
     }
-  }
+
+    return sum(data) / data.length;
 }
 
-function drawXAxisTickLabel(value, layout, mapFunction) {
-  // Map function must be passed with .bind(this).
-  var x = mapFunction(value);
 
-  fill(0);
-  noStroke();
-  textAlign('center', 'center');
+/*
+ * Calculate minimum, maximum and average
+ * for an array of numerical data.
+ *
+ * This function is used by the visualisations
+ * that need summary statistics.
+ */
+function calculateStats(data) {
 
-  // Add tick label.
-  text(value,
-       x,
-       layout.bottomMargin + layout.marginSize / 2);
+    if (data.length == 0) {
+        return {
+            min: 0,
+            max: 0,
+            mean: 0
+        };
+    }
 
-  if (layout.grid) {
-    // Add grid line.
-    stroke(220);
-    line(x,
-         layout.topMargin,
-         x,
-         layout.bottomMargin);
-  }
+    var minimum = data[0];
+    var maximum = data[0];
+
+    for (var i = 0; i < data.length; i++) {
+
+        if (data[i] < minimum) {
+            minimum = data[i];
+        }
+
+        if (data[i] > maximum) {
+            maximum = data[i];
+        }
+    }
+
+    return {
+        min: minimum,
+        max: maximum,
+        mean: mean(data)
+    };
+}
+
+
+/*
+ * Convert an array of strings into numbers.
+ */
+function stringsToNumbers(data) {
+
+    var numbers = [];
+
+    for (var i = 0; i < data.length; i++) {
+        numbers.push(Number(data[i]));
+    }
+
+    return numbers;
+}
+
+
+/*
+ * Return a slice of row numbers from a p5.Table.
+ */
+function sliceRowNumbers(data, start, end) {
+
+    var numbers = [];
+
+    for (var i = start; i < end; i++) {
+        numbers.push(data.getNum(i, 0));
+    }
+
+    return numbers;
+}
+
+
+/*
+ * Map a value from one range to another.
+ */
+function mapValue(value, min1, max1, min2, max2) {
+
+    return map(
+        value,
+        min1,
+        max1,
+        min2,
+        max2
+    );
 }
