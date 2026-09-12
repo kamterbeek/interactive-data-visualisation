@@ -1,78 +1,138 @@
 function TechDiversityRace() {
+    this.name = 'Tech Diversity: Race';
+    this.id = 'tech-diversity-race';
 
-  // Name for the visualisation to appear in the menu bar.
-  this.name = 'Tech Diversity: Race';
+    this.loaded = false;
 
-  // Each visualisation must have a unique ID with no special
-  // characters.
-  this.id = 'tech-diversity-race';
+    this.preload = function() {
+        var self = this;
 
-  // Property to represent whether data has been loaded.
-  this.loaded = false;
+        this.data = loadTable(
+            'data/tech-diversity-race.csv',
+            'csv',
+            'header',
+            function(table) {
+                self.loaded = true;
+            }
+        );
+    };
 
-  // Preload the data. This function is called automatically by the
-  // gallery when a visualisation is added.
-  this.preload = function() {
-    var self = this;
-    this.data = loadTable(
-      './data/tech-diversity/race-2018.csv', 'csv', 'header',
-      // Callback function to set the value
-      // this.loaded to true.
-      function(table) {
-        self.loaded = true;
-      });
-  };
+    this.setup = function() {
+        if (!this.loaded) {
+            return;
+        }
 
-  this.setup = function() {
-    if (!this.loaded) {
-      console.log('Data not yet loaded');
-      return;
-    }
+        // Create a dropdown menu for selecting a company.
+        this.select = createSelect();
+        this.select.position(375, 50);
 
-    // Create a select DOM element.
-    // this.select = // ???
+        // Get the company names from the table columns.
+        var companyNames = this.data.columns.slice(1);
 
-    // Set select position.
-    // ???
+        // Add each company as an option in the dropdown.
+        for (var i = 0; i < companyNames.length; i++) {
+            this.select.option(companyNames[i]);
+        }
 
-    // Fill the options with all company names.
-    // ???
-  };
+        // Select the first company by default.
+        this.select.selected(companyNames[0]);
+
+        // Redraw the visualisation when the selection changes.
+        this.select.changed(function() {
+            this.draw();
+        });
+    };
 
     this.destroy = function() {
-    this.select.remove();
-  };
+        if (this.select) {
+            this.select.remove();
+        }
+    };
 
-  // Create a new pie chart object.
-  this.pie = new PieChart(width / 2, height / 2, width * 0.4);
+    this.draw = function() {
+        if (!this.loaded) {
+            return;
+        }
 
-  this.draw = function() {
-    if (!this.loaded) {
-      console.log('Data not yet loaded');
-      return;
-    }
+        background(255);
 
-    // Get the value of the company we're interested in from the
-    // select item.
-    // Use a temporary hard-code example for now.
-    var companyName = 'Facebook';
+        // Get the company selected in the dropdown.
+        var companyName = this.select.value();
 
-    // Get the column of raw data for companyName.
-    var col = this.data.getColumn(companyName);
+        fill(0);
+        noStroke();
+        textSize(20);
 
-    // Convert all data strings to numbers.
-    col = stringsToNumbers(col);
+        text(
+            'Technology Diversity: Race',
+            70,
+            30
+        );
 
-    // Copy the row labels from the table (the first item of each row).
-    var labels = this.data.getColumn(0);
+        textSize(16);
 
-    // Colour to use for each category.
-    var colours = ['blue', 'red', 'green', 'pink', 'purple', 'yellow'];
+        text(
+            companyName,
+            70,
+            60
+        );
 
-    // Make a title.
-    var title = 'Employee diversity at ' + companyName;
+        /*
+         * Each row represents a racial/ethnic category.
+         * The selected company is stored in the corresponding
+         * column of the table.
+         */
+        var categories = this.data.getColumn('race');
 
-    // Draw the pie chart!
-    this.pie.draw(col, labels, colours, title);
-  };
+        var values = [];
+
+        for (var i = 0; i < this.data.getRowCount(); i++) {
+            values.push(
+                this.data.getNum(i, companyName)
+            );
+        }
+
+        // Draw the bars.
+        var barHeight = 35;
+        var startY = 100;
+
+        for (var i = 0; i < categories.length; i++) {
+
+            var y = startY + i * (barHeight + 10);
+
+            fill(0);
+            noStroke();
+            textSize(12);
+
+            text(
+                categories[i],
+                70,
+                y + 22
+            );
+
+            fill(100, 150, 220);
+
+            var barWidth = map(
+                values[i],
+                0,
+                100,
+                0,
+                width - 300
+            );
+
+            rect(
+                220,
+                y,
+                barWidth,
+                barHeight
+            );
+
+            fill(0);
+            text(
+                values[i] + '%',
+                230 + barWidth,
+                y + 22
+            );
+        }
+    };
 }
