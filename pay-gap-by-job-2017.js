@@ -1,106 +1,263 @@
 function PayGapByJob2017() {
+    this.name = "Pay Gap by Job - 2017";
+    this.id = "pay-gap-by-job-2017";
 
-  // Name for the visualisation to appear in the menu bar.
-  this.name = 'Pay gap by job: 2017';
+    this.loaded = false;
 
-  // Each visualisation must have a unique ID with no special
-  // characters.
-  this.id = 'pay-gap-by-job-2017';
+    this.preload = function() {
+        var self = this;
 
-  // Property to represent whether data has been loaded.
-  this.loaded = false;
+        this.data = loadTable(
+            "data/pay-gap-by-job-2017.csv",
+            "csv",
+            "header",
+            function(table) {
+                self.loaded = true;
+            }
+        );
+    };
 
-  // Graph properties.
-  this.pad = 20;
-  this.dotSizeMin = 15;
-  this.dotSizeMax = 40;
+    this.setup = function() {
+        if (!this.loaded) {
+            return;
+        }
 
-  // Preload the data. This function is called automatically by the
-  // gallery when a visualisation is added.
-  this.preload = function() {
-    var self = this;
-    this.data = loadTable(
-      './data/pay-gap/occupation-hourly-pay-by-gender-2017.csv', 'csv', 'header',
-      // Callback function to set the value
-      // this.loaded to true.
-      function(table) {
-        self.loaded = true;
-      });
+        /*
+         * FILTERING EXTENSION
+         *
+         * Allows the user to choose which jobs
+         * should be displayed.
+         */
+        this.jobFilter = createSelect();
 
-  };
+        this.jobFilter.position(300, 20);
 
-  this.setup = function() {
-  };
+        this.jobFilter.option("All jobs", "all");
+        this.jobFilter.option(
+            "Female-dominated jobs",
+            "female"
+        );
+        this.jobFilter.option(
+            "Male-dominated jobs",
+            "male"
+        );
+    };
 
-  this.destroy = function() {
-  };
+    this.destroy = function() {
+        if (this.jobFilter) {
+            this.jobFilter.remove();
+        }
+    };
 
-  this.draw = function() {
-    if (!this.loaded) {
-      console.log('Data not yet loaded');
-      return;
-    }
+    this.draw = function() {
+        if (!this.loaded) {
+            return;
+        }
 
-    // Draw the axes.
-    this.addAxes();
+        background(255);
 
-    // Get data from the table object.
-    var jobs = this.data.getColumn('job_subtype');
-    var propFemale = this.data.getColumn('proportion_female');
-    var payGap = this.data.getColumn('pay_gap');
-    var numJobs = this.data.getColumn('num_jobs');
+        // Title
+        fill(0);
+        noStroke();
+        textSize(20);
 
-    // Convert numerical data from strings to numbers.
-    propFemale = stringsToNumbers(propFemale);
-    payGap = stringsToNumbers(payGap);
-    numJobs = stringsToNumbers(numJobs);
+        text(
+            "Pay Gap by Job - 2017",
+            70,
+            30
+        );
 
-    // Set ranges for axes.
-    //
-    // Use full 100% for x-axis (proportion of women in roles).
-    var propFemaleMin = 0;
-    var propFemaleMax = 100;
+        /*
+         * Get data from the p5.Table.
+         */
+        var propFemale = this.data.getColumn(
+            "proportion_female"
+        );
 
-    // For y-axis (pay gap) use a symmetrical axis equal to the
-    // largest gap direction so that equal pay (0% pay gap) is in the
-    // centre of the canvas. Above the line means men are paid
-    // more. Below the line means women are paid more.
-    var payGapMin = -20;
-    var payGapMax = 20;
+        var payGap = this.data.getColumn(
+            "pay_gap"
+        );
 
-    // Find smallest and largest numbers of people across all
-    // categories to scale the size of the dots.
-    var numJobsMin = min(numJobs);
-    var numJobsMax = max(numJobs);
+        var numJobs = this.data.getColumn(
+            "num_jobs"
+        );
 
-    fill(255);
-    stroke(0);
-    strokeWeight(1);
+        // Convert strings to numbers.
+        propFemale = stringsToNumbers(propFemale);
+        payGap = stringsToNumbers(payGap);
+        numJobs = stringsToNumbers(numJobs);
 
-    for (i = 0; i < this.data.getRowCount(); i++) {
-      // Draw an ellipse for each point.
-      // x = propFemale
-      // y = payGap
-      // size = numJobs
-      ellipse(
-        /// ???
-      );
-    }
-  };
+        /*
+         * Find the range of number of jobs.
+         * This determines the size of each point.
+         */
+        var numJobsMin = min(numJobs);
+        var numJobsMax = max(numJobs);
 
-  this.addAxes = function () {
-    stroke(200);
+        var dotSizeMin = 5;
+        var dotSizeMax = 25;
 
-    // Add vertical line.
-    line(width / 2,
-         0 + this.pad,
-         width / 2,
-         height - this.pad);
+        /*
+         * Determine which filter the user selected.
+         */
+        var filter = "all";
 
-    // Add horizontal line.
-    line(0 + this.pad,
-         height / 2,
-         width - this.pad,
-         height / 2);
-  };
+        if (this.jobFilter) {
+            filter = this.jobFilter.value();
+        }
+
+        /*
+         * Draw each job.
+         */
+        for (var i = 0; i < propFemale.length; i++) {
+
+            /*
+             * FILTERING
+             *
+             * Skip jobs that do not meet the
+             * selected filter.
+             */
+            if (
+                filter == "female" &&
+                propFemale[i] < 50
+            ) {
+                continue;
+            }
+
+            if (
+                filter == "male" &&
+                propFemale[i] >= 50
+            ) {
+                continue;
+            }
+
+            /*
+             * Map female representation to x.
+             */
+            var x = map(
+                propFemale[i],
+                0,
+                100,
+                70,
+                width - 40
+            );
+
+            /*
+             * Map pay gap to y.
+             *
+             * A larger pay gap appears higher
+             * on the graph.
+             */
+            var y = map(
+                payGap[i],
+                -20,
+                20,
+                height - 70,
+                70
+            );
+
+            /*
+             * Map number of jobs to point size.
+             */
+            var size = map(
+                numJobs[i],
+                numJobsMin,
+                numJobsMax,
+                dotSizeMin,
+                dotSizeMax
+            );
+
+            /*
+             * Draw the job.
+             */
+            fill(100);
+            noStroke();
+
+            ellipse(
+                x,
+                y,
+                size,
+                size
+            );
+        }
+
+        /*
+         * Draw axes.
+         */
+        stroke(0);
+        strokeWeight(1);
+
+        line(
+            70,
+            height - 70,
+            width - 40,
+            height - 70
+        );
+
+        line(
+            70,
+            70,
+            70,
+            height - 70
+        );
+
+        /*
+         * Axis labels.
+         */
+        fill(0);
+        noStroke();
+        textSize(12);
+
+        text(
+            "Female employees (%)",
+            width / 2 - 60,
+            height - 30
+        );
+
+        push();
+
+        translate(25, height / 2);
+        rotate(-HALF_PI);
+
+        text(
+            "Pay Gap (%)",
+            0,
+            0
+        );
+
+        pop();
+
+        /*
+         * Add useful reference labels.
+         */
+        text(
+            "0%",
+            65,
+            height - 55
+        );
+
+        text(
+            "100%",
+            width - 65,
+            height - 55
+        );
+
+        text(
+            "+20%",
+            35,
+            75
+        );
+
+        text(
+            "0%",
+            45,
+            height / 2
+        );
+
+        text(
+            "-20%",
+            35,
+            height - 75
+        );
+    };
 }
