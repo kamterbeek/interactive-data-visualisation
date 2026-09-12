@@ -8,7 +8,7 @@ function TechDiversityRace() {
         var self = this;
 
         this.data = loadTable(
-            'data/tech-diversity-race.csv',
+            './data/tech-diversity/race-2018.csv',
             'csv',
             'header',
             function(table) {
