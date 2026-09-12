@@ -1,145 +1,259 @@
 function TechDiversityGender() {
 
-  // Name for the visualisation to appear in the menu bar.
-  this.name = 'Tech Diversity: Gender';
+    this.name = 'Tech Diversity: Gender';
+    this.id = 'tech-diversity-gender';
 
-  // Each visualisation must have a unique ID with no special
-  // characters.
-  this.id = 'tech-diversity-gender';
+    this.loaded = false;
 
-  // Layout object to store all common plot layout parameters and
-  // methods.
-  this.layout = {
-    // Margin positions around the plot. Left and bottom margins are
-    // bigger so there is space for axis and tick labels on the canvas.
-    leftMargin: 130,
-    rightMargin: width,
-    topMargin: 30,
-    bottomMargin: height,
-    pad: 5,
+    this.preload = function() {
 
-    plotWidth: function() {
-      return this.rightMargin - this.leftMargin;
-    },
+        var self = this;
 
-    // Boolean to enable/disable background grid.
-    grid: true,
+        this.data = loadTable(
+            'data/tech-diversity-gender.csv',
+            'csv',
+            'header',
+            function(table) {
+                self.loaded = true;
+            }
+        );
+    };
 
-    // Number of axis tick labels to draw so that they are not drawn on
-    // top of one another.
-    numXTickLabels: 10,
-    numYTickLabels: 8,
-  };
 
-  // Middle of the plot: for 50% line.
-  this.midX = (this.layout.plotWidth() / 2) + this.layout.leftMargin;
+    this.setup = function() {
 
-  // Default visualisation colours.
-  this.femaleColour = color(255, 0 ,0);
-  this.maleColour = color(0, 255, 0);
+        if (!this.loaded) {
+            return;
+        }
 
-  // Property to represent whether data has been loaded.
-  this.loaded = false;
+        this.layout = {
+            leftMargin: 100,
+            rightMargin: 40,
+            topMargin: 70,
+            bottomMargin: 70,
+            pad: 20,
 
-  // Preload the data. This function is called automatically by the
-  // gallery when a visualisation is added.
-  this.preload = function() {
-    var self = this;
-    this.data = loadTable(
-      './data/tech-diversity/gender-2018.csv', 'csv', 'header',
-      // Callback function to set the value
-      // this.loaded to true.
-      function(table) {
-        self.loaded = true;
-      });
+            plotWidth: function() {
+                return width -
+                    this.leftMargin -
+                    this.rightMargin;
+            },
 
-  };
+            plotHeight: function() {
+                return height -
+                    this.topMargin -
+                    this.bottomMargin;
+            }
+        };
 
-  this.setup = function() {
-    // Font defaults.
-    textSize(16);
-  };
+        // Colours for the two sections of each bar.
+        this.femaleColour = color(230, 100, 150);
+        this.maleColour = color(100, 150, 220);
+    };
 
-  this.destroy = function() {
-  };
 
-  this.draw = function() {
-    if (!this.loaded) {
-      console.log('Data not yet loaded');
-      return;
-    }
+    this.destroy = function() {
+        // No additional DOM elements to remove.
+    };
 
-    // Draw Female/Male labels at the top of the plot.
-    this.drawCategoryLabels();
 
-    var lineHeight = (height - this.layout.topMargin) /
-        this.data.getRowCount();
+    this.draw = function() {
 
-    // Loop over every row in the data.
-    for (var i = 0; i < this.data.getRowCount(); i++) {
+        if (!this.loaded) {
+            return;
+        }
 
-      // Calculate the y position for each company.
-      var lineY = (lineHeight * i) + this.layout.topMargin;
+        background(255);
 
-      // Create an object that stores data from the current row.
-      var company = {
-        // Convert strings to numbers.
-        // 'name': ???
-        // 'female': ???
-        // 'male': ???
-      };
+        // Title.
+        fill(0);
+        noStroke();
+        textSize(20);
 
-      // Draw the company name in the left margin.
-      fill(0);
-      noStroke();
-      textAlign('right', 'top');
-      text(company.name,
-           this.layout.leftMargin - this.layout.pad,
-           lineY);
+        text(
+            'Technology Diversity: Gender',
+            this.layout.leftMargin,
+            35
+        );
 
-      // Draw female employees rectangle.
-      fill(this.femaleColour);
-      rect(this.layout.leftMargin,
-           lineY,
-           this.mapPercentToWidth(company.female),
-           lineHeight - this.layout.pad);
 
-      // Draw male employees rectangle.
-      // ???
-    }
+        /*
+         * Extract the data from the p5.Table.
+         */
+        var companies = [];
 
-    // Draw 50% line
-    stroke(150);
-    strokeWeight(1);
-    line(this.midX,
-         this.layout.topMargin,
-         this.midX,
-         this.layout.bottomMargin);
+        for (var i = 0; i < this.data.getRowCount(); i++) {
 
-  };
+            var company = {
+                name: this.data.getString(i, 'company'),
+                female: this.data.getNum(i, 'female'),
+                male: this.data.getNum(i, 'male')
+            };
 
-  this.drawCategoryLabels = function() {
-    fill(0);
-    noStroke();
-    textAlign('left', 'top');
-    text('Female',
-         this.layout.leftMargin,
-         this.layout.pad);
-    textAlign('center', 'top');
-    text('50%',
-         this.midX,
-         this.layout.pad);
-    textAlign('right', 'top');
-    text('Male',
-         this.layout.rightMargin,
-         this.layout.pad);
-  };
+            companies.push(company);
+        }
 
-  this.mapPercentToWidth = function(percent) {
-    return map(percent,
-               0,
-               100,
-               0,
-               this.layout.plotWidth());
-  };
+
+        /*
+         * Draw one stacked bar for each company.
+         */
+        var lineHeight =
+            this.layout.plotHeight() / companies.length;
+
+
+        for (var i = 0; i < companies.length; i++) {
+
+            var company = companies[i];
+
+            var lineY =
+                this.layout.topMargin +
+                i * lineHeight;
+
+
+            // Company name.
+            fill(0);
+            noStroke();
+            textSize(12);
+
+            text(
+                company.name,
+                10,
+                lineY + lineHeight / 2
+            );
+
+
+            // Female section.
+            fill(this.femaleColour);
+
+            rect(
+                this.layout.leftMargin,
+                lineY,
+                this.mapPercentToWidth(company.female),
+                lineHeight - this.layout.pad
+            );
+
+
+            // Male section.
+            fill(this.maleColour);
+
+            rect(
+                this.layout.leftMargin +
+                this.mapPercentToWidth(company.female),
+
+                lineY,
+
+                this.mapPercentToWidth(company.male),
+
+                lineHeight - this.layout.pad
+            );
+
+
+            // Percentage labels.
+            fill(0);
+            noStroke();
+            textSize(10);
+
+            text(
+                company.female + '%',
+                this.layout.leftMargin +
+                this.mapPercentToWidth(company.female) / 2 - 10,
+
+                lineY + lineHeight / 2
+            );
+
+            text(
+                company.male + '%',
+                this.layout.leftMargin +
+                this.mapPercentToWidth(company.female) +
+                this.mapPercentToWidth(company.male) / 2 - 10,
+
+                lineY + lineHeight / 2
+            );
+        }
+
+
+        /*
+         * X-axis.
+         */
+        stroke(0);
+        strokeWeight(1);
+
+        line(
+            this.layout.leftMargin,
+            height - this.layout.bottomMargin,
+            width - this.layout.rightMargin,
+            height - this.layout.bottomMargin
+        );
+
+
+        /*
+         * X-axis labels.
+         */
+        fill(0);
+        noStroke();
+        textSize(11);
+
+        for (var percentage = 0; percentage <= 100; percentage += 20) {
+
+            var x = this.layout.leftMargin +
+                this.mapPercentToWidth(percentage);
+
+            text(
+                percentage + '%',
+                x - 10,
+                height - this.layout.bottomMargin + 20
+            );
+        }
+
+
+        // Legend.
+        fill(this.femaleColour);
+
+        rect(
+            width - 220,
+            height - 45,
+            15,
+            15
+        );
+
+        fill(0);
+        text(
+            'Female',
+            width - 200,
+            height - 32
+        );
+
+
+        fill(this.maleColour);
+
+        rect(
+            width - 120,
+            height - 45,
+            15,
+            15
+        );
+
+        fill(0);
+        text(
+            'Male',
+            width - 100,
+            height - 32
+        );
+    };
+
+
+    /*
+     * Convert a percentage into a width
+     * that fits inside the graph.
+     */
+    this.mapPercentToWidth = function(percent) {
+
+        return map(
+            percent,
+            0,
+            100,
+            0,
+            this.layout.plotWidth()
+        );
+    };
 }
