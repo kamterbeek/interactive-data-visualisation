@@ -1,34 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Case study 2: Data visualisation</title>
+<html>
+<head>
+    <meta charset="UTF-8">
 
-    <!-- Libraries -->
-    <script src="lib/p5.min.js"></script>
+    <title>Data Visualisation Dashboard</title>
 
     <link rel="stylesheet" href="style.css">
 
-    <!-- Main sketch file -->
+    <!-- p5.js -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.js"></script>
+
+    <!-- Main program -->
     <script src="sketch.js"></script>
 
-    <!-- Main visualisation files -->
+    <!-- Visualisations -->
     <script src="tech-diversity-race.js"></script>
     <script src="tech-diversity-gender.js"></script>
     <script src="pay-gap-by-job-2017.js"></script>
     <script src="pay-gap-1997-2017.js"></script>
     <script src="climate-change.js"></script>
 
-    <!-- Add extra scripts below -->
+    <!-- Supporting files -->
     <script src="helper-functions.js"></script>
     <script src="gallery.js"></script>
     <script src="pie-chart.js"></script>
-  </head>
-  <body>
-    <div id="app" class="container">
-      <ul id="visuals-menu"></ul>
-    </div>
-  </body>
+</head>
+
+<body>
+
+    <header>
+        <h1>Data Visualisation Dashboard</h1>
+
+        <div id="controls">
+            <label for="graphSelect">
+                Select visualisation:
+            </label>
+
+            <select id="graphSelect">
+                <option value="">Select a visualisation</option>
+
+                <option value="tech-diversity-race">
+                    Tech Diversity: Race
+                </option>
+
+                <option value="tech-diversity-gender">
+                    Tech Diversity: Gender
+                </option>
+
+                <option value="pay-gap-by-job-2017">
+                    Pay Gap by Job - 2017
+                </option>
+
+                <option value="pay-gap-timeseries">
+                    Pay Gap 1997-2017
+                </option>
+
+                <option value="climate-change">
+                    Climate Change
+                </option>
+            </select>
+        </div>
+    </header>
+
+    <!--
+        The original Gallery class expects this menu to exist.
+        It is hidden because the new dropdown above is being used
+        as the main navigation.
+    -->
+    <ul id="visuals-menu" style="display: none;"></ul>
+
+    <!-- p5.js canvas is placed here -->
+    <main id="app"></main>
+
+</body>
 </html>
