@@ -1,65 +1,170 @@
 function ClimateChange() {
-    this.name = "Climate Change";
-    this.id = "climate-change";
+
+    // Name for the visualisation.
+    this.name = 'Climate Change';
+
+    // Unique ID.
+    this.id = 'climate-change';
+
+    // Axis labels.
+    this.xAxisLabel = 'year';
+    this.yAxisLabel = '℃';
+
+
+    // ---------------------------------------------------------------
+    // Layout
+    // ---------------------------------------------------------------
+
+    var marginSize = 35;
+
+    this.layout = {
+
+        marginSize: marginSize,
+
+        leftMargin: marginSize * 2,
+        rightMargin: width - marginSize,
+        topMargin: marginSize,
+        bottomMargin: height - marginSize * 2,
+
+        pad: 5,
+
+        plotWidth: function() {
+            return this.rightMargin - this.leftMargin;
+        },
+
+        plotHeight: function() {
+            return this.bottomMargin - this.topMargin;
+        },
+
+        // Show grid lines.
+        grid: false,
+
+        // Number of axis tick labels.
+        numXTickLabels: 8,
+        numYTickLabels: 8
+    };
+
+
+    // ---------------------------------------------------------------
+    // Data
+    // ---------------------------------------------------------------
 
     this.loaded = false;
 
-    this.startYear = 1960;
-    this.endYear = 2020;
 
-    this.startSlider;
-    this.endSlider;
-    this.stats;
-
+    // Load the climate data.
     this.preload = function() {
+
         var self = this;
+
         this.data = loadTable(
             './data/surface-temperature/surface-temperature.csv',
-            "csv",
-            "header",
+            'csv',
+            'header',
+
             function(table) {
                 self.loaded = true;
             }
         );
     };
 
+
+    // ---------------------------------------------------------------
+    // Setup
+    // ---------------------------------------------------------------
+
     this.setup = function() {
+
         if (!this.loaded) {
             return;
         }
 
-        this.startYear = this.data.getNum(0, "year");
-        this.endYear = this.data.getNum(
-            this.data.getRowCount() - 1,
-            "year"
-        );
+        textSize(16);
+        textAlign('center', 'center');
 
-        // Start year slider
+
+        // Find the first and last year.
+        this.minYear =
+            this.data.getNum(0, 'year');
+
+        this.maxYear =
+            this.data.getNum(
+                this.data.getRowCount() - 1,
+                'year'
+            );
+
+
+        // Find minimum and maximum temperatures.
+        var temperatures =
+            this.data.getColumn('temperature');
+
+        temperatures =
+            stringsToNumbers(temperatures);
+
+        this.minTemperature =
+            min(temperatures);
+
+        this.maxTemperature =
+            max(temperatures);
+
+
+        // Calculate summary statistics.
+        var stats =
+            calculateStats(temperatures);
+
+        this.meanTemperature = stats.mean;
+        this.minTemperature = stats.min;
+        this.maxTemperature = stats.max;
+
+
+        // -----------------------------------------------------------
+        // Animation
+        // -----------------------------------------------------------
+
+        this.frameCount = 0;
+
+
+        // -----------------------------------------------------------
+        // Start-year slider
+        // -----------------------------------------------------------
+
         this.startSlider = createSlider(
-            this.startYear,
-            this.endYear,
-            this.startYear,
+            this.minYear,
+            this.maxYear - 1,
+            this.minYear,
             1
         );
 
-        this.startSlider.position(20, 20);
+        // Put the slider into the dashboard controls area.
+        this.startSlider.parent('visualControls');
 
-        // End year slider
+        this.startSlider.position(0, 5);
+
+
+        // -----------------------------------------------------------
+        // End-year slider
+        // -----------------------------------------------------------
+
         this.endSlider = createSlider(
-            this.startYear,
-            this.endYear,
-            this.endYear,
+            this.minYear + 1,
+            this.maxYear,
+            this.maxYear,
             1
         );
 
-        this.endSlider.position(20, 50);
+        // Put the slider into the dashboard controls area.
+        this.endSlider.parent('visualControls');
 
-        // Statistics display
-        this.stats = createP("");
-        this.stats.position(700, 10);
+        this.endSlider.position(220, 5);
     };
 
+
+    // ---------------------------------------------------------------
+    // Destroy
+    // ---------------------------------------------------------------
+
     this.destroy = function() {
+
         if (this.startSlider) {
             this.startSlider.remove();
         }
@@ -67,252 +172,357 @@ function ClimateChange() {
         if (this.endSlider) {
             this.endSlider.remove();
         }
-
-        if (this.stats) {
-            this.stats.remove();
-        }
     };
 
-    /*
-     * Calculate minimum, maximum and average
-     * temperature for the selected year range.
-     */
-    this.calculateStats = function() {
-        var temperatures = [];
 
-        for (var i = 0; i < this.data.getRowCount(); i++) {
-
-            var year = this.data.getNum(i, "year");
-            var temperature = this.data.getNum(i, "temperature");
-
-            if (year >= this.startYear &&
-                year <= this.endYear) {
-
-                temperatures.push(temperature);
-            }
-        }
-
-        if (temperatures.length === 0) {
-            return {
-                min: 0,
-                max: 0,
-                mean: 0
-            };
-        }
-
-        var minimum = temperatures[0];
-        var maximum = temperatures[0];
-        var total = 0;
-
-        for (var j = 0; j < temperatures.length; j++) {
-
-            var value = temperatures[j];
-
-            total += value;
-
-            if (value < minimum) {
-                minimum = value;
-            }
-
-            if (value > maximum) {
-                maximum = value;
-            }
-        }
-
-        return {
-            min: minimum,
-            max: maximum,
-            mean: total / temperatures.length
-        };
-    };
+    // ---------------------------------------------------------------
+    // Draw
+    // ---------------------------------------------------------------
 
     this.draw = function() {
+
         if (!this.loaded) {
             return;
         }
 
-        background(255);
 
-        // Update selected year range
-        this.startYear = this.startSlider.value();
-        this.endYear = this.endSlider.value();
+        // Prevent the sliders from overlapping.
+        if (
+            this.startSlider.value() >=
+            this.endSlider.value()
+        ) {
 
-        // Make sure the sliders cannot cross
-        if (this.startYear > this.endYear) {
-            this.startYear = this.endYear;
-            this.startSlider.value(this.startYear);
+            this.startSlider.value(
+                this.endSlider.value() - 1
+            );
         }
 
-        // Calculate statistics for selected range
-        var stats = this.calculateStats();
 
-        // Display statistics
-        this.stats.html(
-            "Temperature Statistics<br>" +
-            "Minimum: " + nf(stats.min, 1, 2) + "°C<br>" +
-            "Maximum: " + nf(stats.max, 1, 2) + "°C<br>" +
-            "Average: " + nf(stats.mean, 1, 2) + "°C"
-        );
+        // Get selected years.
+        this.startYear =
+            this.startSlider.value();
 
-        // Labels for sliders
+        this.endYear =
+            this.endSlider.value();
+
+
+        // -----------------------------------------------------------
+        // Title
+        // -----------------------------------------------------------
+
         fill(0);
         noStroke();
-        textSize(12);
+
+        textSize(20);
+        textAlign(LEFT, TOP);
 
         text(
-            "Start Year: " + this.startYear,
-            170,
-            32
+            'Climate Change',
+            this.layout.leftMargin,
+            10
+        );
+
+
+        // -----------------------------------------------------------
+        // Summary statistics
+        // -----------------------------------------------------------
+
+        textSize(14);
+        textAlign(LEFT, CENTER);
+
+        text(
+            'Minimum: ' +
+            nf(this.minTemperature, 1, 2) +
+            '℃',
+            700,
+            25
         );
 
         text(
-            "End Year: " + this.endYear,
-            170,
-            62
+            'Maximum: ' +
+            nf(this.maxTemperature, 1, 2) +
+            '℃',
+            700,
+            45
         );
 
-        // Find temperature range in the complete dataset
-        var temperatures = this.data.getColumn("temperature");
-        temperatures = stringsToNumbers(temperatures);
-
-        var minTemperature = min(temperatures);
-        var maxTemperature = max(temperatures);
-
-        var firstYear = this.data.getNum(0, "year");
-        var lastYear = this.data.getNum(
-            this.data.getRowCount() - 1,
-            "year"
+        text(
+            'Average: ' +
+            nf(this.meanTemperature, 1, 2) +
+            '℃',
+            700,
+            65
         );
 
-        // Draw graph
-        var previous = null;
 
-        for (var i = 0; i < this.data.getRowCount(); i++) {
+        // -----------------------------------------------------------
+        // Y-axis labels
+        // -----------------------------------------------------------
 
-            var currentYear = this.data.getNum(i, "year");
-            var currentTemperature =
-                this.data.getNum(i, "temperature");
+        drawYAxisTickLabels(
+            this.minTemperature,
+            this.maxTemperature,
+            this.layout,
+            this.mapTemperatureToHeight.bind(this),
+            1
+        );
 
-            // Filtering by selected year range
-            if (currentYear >= this.startYear &&
-                currentYear <= this.endYear) {
 
-                var x = map(
-                    currentYear,
-                    firstYear,
-                    lastYear,
-                    70,
-                    width - 40
-                );
-
-                var y = map(
-                    currentTemperature,
-                    minTemperature,
-                    maxTemperature,
-                    height - 70,
-                    100
-                );
-
-                // Temperature colour
-                fill(
-                    this.mapTemperatureToColour(
-                        currentTemperature,
-                        minTemperature,
-                        maxTemperature
-                    )
-                );
-
-                noStroke();
-
-                // Draw the temperature point
-                ellipse(x, y, 8, 8);
-
-                // Draw line connecting points
-                if (previous != null) {
-
-                    stroke(100);
-                    strokeWeight(1);
-
-                    line(
-                        previous.x,
-                        previous.y,
-                        x,
-                        y
-                    );
-                }
-
-                previous = {
-                    x: x,
-                    y: y
-                };
-            }
-        }
-
+        // -----------------------------------------------------------
         // Axes
-        stroke(0);
+        // -----------------------------------------------------------
+
+        drawAxis(this.layout);
+
+
+        // -----------------------------------------------------------
+        // Axis labels
+        // -----------------------------------------------------------
+
+        drawAxisLabels(
+            this.xAxisLabel,
+            this.yAxisLabel,
+            this.layout
+        );
+
+
+        // -----------------------------------------------------------
+        // Average temperature line
+        // -----------------------------------------------------------
+
+        stroke(200);
         strokeWeight(1);
 
         line(
-            70,
-            height - 70,
-            width - 40,
-            height - 70
+            this.layout.leftMargin,
+            this.mapTemperatureToHeight(
+                this.meanTemperature
+            ),
+            this.layout.rightMargin,
+            this.mapTemperatureToHeight(
+                this.meanTemperature
+            )
         );
 
-        line(
-            70,
-            100,
-            70,
-            height - 70
-        );
 
-        // Axis labels
-        noStroke();
-        fill(0);
+        // -----------------------------------------------------------
+        // Plot temperature data
+        // -----------------------------------------------------------
 
-        textSize(12);
+        var previous;
 
-        text(
-            "Year",
-            width / 2,
-            height - 30
-        );
+        var numYears =
+            this.endYear - this.startYear;
 
-        push();
+        var segmentWidth =
+            this.layout.plotWidth() / numYears;
 
-        translate(25, height / 2);
-        rotate(-HALF_PI);
+        var yearCount = 0;
 
-        text(
-            "Temperature (°C)",
-            0,
-            0
-        );
 
-        pop();
+        // Loop through all rows.
+        for (
+            var i = 0;
+            i < this.data.getRowCount();
+            i++
+        ) {
+
+            // Store the current year's data.
+            var current = {
+
+                year:
+                    this.data.getNum(
+                        i,
+                        'year'
+                    ),
+
+                temperature:
+                    this.data.getNum(
+                        i,
+                        'temperature'
+                    )
+            };
+
+
+            // Only draw data inside the selected range.
+            if (
+                previous != null &&
+                current.year > this.startYear &&
+                current.year <= this.endYear
+            ) {
+
+
+                // ---------------------------------------------------
+                // Temperature gradient
+                // ---------------------------------------------------
+
+                noStroke();
+
+                fill(
+                    this.mapTemperatureToColour(
+                        current.temperature
+                    )
+                );
+
+                rect(
+                    this.mapYearToWidth(previous.year),
+                    this.layout.topMargin,
+                    this.mapYearToWidth(current.year) -
+                    this.mapYearToWidth(previous.year),
+                    this.layout.plotHeight()
+                );
+
+
+                // ---------------------------------------------------
+                // Line between years
+                // ---------------------------------------------------
+
+                stroke(0);
+                strokeWeight(1);
+
+                line(
+                    this.mapYearToWidth(previous.year),
+                    this.mapTemperatureToHeight(
+                        previous.temperature
+                    ),
+
+                    this.mapYearToWidth(current.year),
+                    this.mapTemperatureToHeight(
+                        current.temperature
+                    )
+                );
+
+
+                // ---------------------------------------------------
+                // X-axis labels
+                // ---------------------------------------------------
+
+                var xLabelSkip =
+                    ceil(
+                        numYears /
+                        this.layout.numXTickLabels
+                    );
+
+
+                if (
+                    yearCount % xLabelSkip == 0
+                ) {
+
+                    drawXAxisTickLabel(
+                        previous.year,
+                        this.layout,
+                        this.mapYearToWidth.bind(this)
+                    );
+                }
+
+
+                // If only a few years are displayed,
+                // also draw the final year.
+                if (
+                    numYears <= 6 &&
+                    yearCount == numYears - 1
+                ) {
+
+                    drawXAxisTickLabel(
+                        current.year,
+                        this.layout,
+                        this.mapYearToWidth.bind(this)
+                    );
+                }
+
+
+                yearCount++;
+            }
+
+
+            // Stop drawing when the animation reaches
+            // the current frame.
+            if (
+                yearCount >= this.frameCount
+            ) {
+                break;
+            }
+
+
+            // Store the current year for the
+            // next line segment.
+            previous = current;
+        }
+
+
+        // Advance animation.
+        this.frameCount++;
+
+
+        // Stop once all years have been drawn.
+        if (
+            this.frameCount >= numYears
+        ) {
+
+            // Keep draw loop running so that
+            // changing the sliders updates the graph.
+            // noLoop();
+        }
     };
 
-    /*
-     * Convert temperature into a colour value.
-     */
-    this.mapTemperatureToColour = function(
-        temperature,
-        minTemperature,
-        maxTemperature
-    ) {
 
-        var colourValue = map(
-            temperature,
-            minTemperature,
-            maxTemperature,
-            0,
-            255
+    // ---------------------------------------------------------------
+    // Map year to canvas width
+    // ---------------------------------------------------------------
+
+    this.mapYearToWidth = function(value) {
+
+        return map(
+            value,
+
+            this.startYear,
+            this.endYear,
+
+            this.layout.leftMargin,
+            this.layout.rightMargin
         );
+    };
+
+
+    // ---------------------------------------------------------------
+    // Map temperature to canvas height
+    // ---------------------------------------------------------------
+
+    this.mapTemperatureToHeight = function(value) {
+
+        return map(
+            value,
+
+            this.minTemperature,
+            this.maxTemperature,
+
+            this.layout.bottomMargin,
+            this.layout.topMargin
+        );
+    };
+
+
+    this.mapTemperatureToColour = function(value) {
+
+        var red =
+            map(
+                value,
+
+                this.minTemperature,
+                this.maxTemperature,
+
+                0,
+                255
+            );
+
+        var blue =
+            255 - red;
 
         return color(
-            colourValue,
-            100,
-            255 - colourValue
+            red,
+            0,
+            blue,
+            100
         );
     };
 }
