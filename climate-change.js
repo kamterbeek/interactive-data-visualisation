@@ -3,8 +3,7 @@ function ClimateChange() {
   // Name for the visualisation to appear in the menu bar.
   this.name = 'Climate Change';
 
-  // Each visualisation must have a unique ID with no special
-  // characters.
+  // Each visualisation must have a unique ID with no special characters.
   this.id = 'climate-change';
 
   // Names for each axis.
@@ -13,13 +12,12 @@ function ClimateChange() {
 
   var marginSize = 35;
 
-  // Layout object to store all common plot layout parameters and
-  // methods.
-  this.layout = {
+  // Layout object to store all common plot layout parameters and methods.
+    
+    this.layout = {
     marginSize: marginSize,
 
-    // Margin positions around the plot. Left and bottom have double
-    // margin size to make space for axis and tick labels on the canvas.
+    // Margin positions around the plot. Left and bottom have double margin size to make space for axis and tick labels on the canvas.
     leftMargin: marginSize * 2,
     rightMargin: width - marginSize,
     topMargin: marginSize,
@@ -37,8 +35,7 @@ function ClimateChange() {
     // Boolean to enable/disable background grid.
     grid: false,
 
-    // Number of axis tick labels to draw so that they are not drawn on
-    // top of one another.
+    // Number of axis tick labels to draw
     numXTickLabels: 8,
     numYTickLabels: 8,
   };
@@ -46,14 +43,12 @@ function ClimateChange() {
   // Property to represent whether data has been loaded.
   this.loaded = false;
 
-  // Preload the data. This function is called automatically by the
-  // gallery when a visualisation is added.
+  // Preload the data. 
   this.preload = function() {
     var self = this;
     this.data = loadTable(
       './data/surface-temperature/surface-temperature.csv', 'csv', 'header',
-      // Callback function to set the value
-      // this.loaded to true.
+    
       function(table) {
         self.loaded = true;
       });
@@ -75,8 +70,7 @@ function ClimateChange() {
     // Find mean temperature to plot average marker.
     this.meanTemperature = mean(this.data.getColumn('temperature'));
 
-    // Count the number of frames drawn since the visualisation
-    // started so that we can animate the plot.
+    // Count the number of frames drawn since the visualisation started so that we can animate the plot.
     this.frameCount = 0;
 
 
@@ -96,8 +90,7 @@ function ClimateChange() {
     /* End - own code */
 
 
-    // Create sliders to control start and end years. Default to
-    // visualise full range.
+    // Create sliders to control start and end years. Default to visualise full range.
     this.startSlider = createSlider(this.minYear,
                                     this.maxYear - 1,
                                     this.minYear,
@@ -215,14 +208,12 @@ function ClimateChange() {
          this.layout.rightMargin,
          this.mapTemperatureToHeight(this.meanTemperature));
 
-    // Plot all temperatures between startYear and endYear using the
-    // width of the canvas minus margins.
+    // Plot all temperatures between startYear and endYear using the width of the canvas minus margins.
     var previous;
     var numYears = this.endYear - this.startYear;
     var segmentWidth = this.layout.plotWidth() / numYears;
 
-    // Count the number of years plotted each frame to create
-    // animation effect.
+    // Count the number of years plotted each frame to create animation effect.
     var yearCount = 0;
 
     // Loop over all rows but only plot those in range.
@@ -262,16 +253,14 @@ function ClimateChange() {
         /* End - own code */
 
 
-        // Draw line segment connecting previous year to current
-        // year temperature.
+        // Draw line segment connecting previous year to current year temperature.
         stroke(0);
         line(this.mapYearToWidth(previous.year),
              this.mapTemperatureToHeight(previous.temperature),
              this.mapYearToWidth(current.year),
              this.mapTemperatureToHeight(current.temperature));
 
-        // The number of x-axis labels to skip so that only
-        // numXTickLabels are drawn.
+        // The number of x-axis labels to skip so that only numXTickLabels are drawn.
         var xLabelSkip = ceil(numYears / this.layout.numXTickLabels);
 
         // Draw the tick label marking the start of the previous year.
@@ -280,8 +269,7 @@ function ClimateChange() {
                              this.mapYearToWidth.bind(this));
         }
 
-        // When six or fewer years are displayed also draw the final
-        // year x tick label.
+        // When six or fewer years are displayed also draw the final year x tick label.
         if ((numYears <= 6
              && yearCount == numYears - 1)) {
           drawXAxisTickLabel(current.year, this.layout,
@@ -291,22 +279,16 @@ function ClimateChange() {
         yearCount++;
       }
 
-      // Stop drawing this frame when the number of years drawn is
-      // equal to the frame count. This creates the animated effect
-      // over successive frames.
+      // Stop drawing this frame when the number of years drawn is equal to the frame count. This creates the animated effect over successive frames.
       if (yearCount >= this.frameCount) {
         break;
       }
 
-      // Assign current year to previous year so that it is available
-      // during the next iteration of this loop to give us the start
-      // position of the next line segment.
+      // Assign current year to previous year so that it is available during the next iteration of this loop to give us the start position of the next line segment.
       previous = current;
     }
 
-    // Count the number of frames since this visualisation
-    // started. This is used in creating the animation effect and to
-    // stop the main p5 draw loop when all years have been drawn.
+    // Count the number of frames since this visualisation started. This is used in creating the animation effect and to stop the main p5 draw loop when all years have been drawn.
     this.frameCount++;
 
     // Stop animation when all years have been drawn.
