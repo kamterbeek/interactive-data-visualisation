@@ -1,4 +1,4 @@
-/* Overall page styling */
+/* Overall page */
 body {
     margin: 0;
     padding: 0;
@@ -7,11 +7,12 @@ body {
     color: #222;
 }
 
+
 /* Header */
 header {
     width: 100%;
     box-sizing: border-box;
-    padding: 20px 30px;
+    padding: 20px 30px 10px 30px;
     background-color: white;
     border-bottom: 1px solid #ddd;
 }
@@ -22,7 +23,8 @@ h1 {
     font-weight: 600;
 }
 
-/* Visualisation controls */
+
+/* Main visualisation selector */
 #controls {
     display: flex;
     align-items: center;
@@ -43,6 +45,16 @@ h1 {
     cursor: pointer;
 }
 
+
+/* Area for controls belonging to the selected visualisation */
+#visualControls {
+    position: relative;
+    width: 1024px;
+    height: 45px;
+    margin: 5px auto 0 auto;
+}
+
+
 /* Main visualisation area */
 #app {
     width: 1024px;
@@ -54,7 +66,8 @@ h1 {
     border-radius: 6px;
 }
 
-/* Make the p5 canvas behave nicely inside the dashboard */
+
+/* p5 canvas */
 canvas {
     display: block;
     margin: 0 auto;
