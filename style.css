@@ -59,11 +59,11 @@ h1 {
 #app {
     width: 1024px;
     margin: 25px auto;
-    padding: 20px;
+    padding: 0;
     box-sizing: border-box;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
 }
 
 
