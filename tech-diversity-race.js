@@ -1,17 +1,18 @@
 function TechDiversityRace() {
 
+    // Name for the visualisation to appear in the menu bar.
     this.name = 'Tech Diversity: Race';
+
+    // Each visualisation must have a unique ID with no special
+    // characters.
     this.id = 'tech-diversity-race';
 
+    // Property to represent whether data has been loaded.
     this.loaded = false;
 
-
-    // ---------------------------------------------------------------
-    // Load the data
-    // ---------------------------------------------------------------
-
+    // Preload the data. This function is called automatically by the
+    // gallery when a visualisation is added.
     this.preload = function() {
-
         var self = this;
 
         this.data = loadTable(
@@ -24,124 +25,74 @@ function TechDiversityRace() {
         );
     };
 
-
-    // ---------------------------------------------------------------
-    // Setup
-    // ---------------------------------------------------------------
-
     this.setup = function() {
-
         if (!this.loaded) {
             return;
         }
 
-        // Create the company dropdown.
+        /* Start - own code */
+
+        // Create a dropdown so the user can select a company.
         this.select = createSelect();
 
-        // Put the dropdown into the dashboard controls area.
+        // Add the dropdown to the visualisation controls area.
         this.select.parent('visualControls');
-
         this.select.position(0, 5);
 
+        // Get the company names from the CSV header.
+        // The first column contains the race categories, so it is excluded.
+        var companyNames = this.data.columns.slice(1);
 
-        // The first column contains the race categories.
-        // All remaining columns contain company names.
-        var companyNames =
-            this.data.columns.slice(1);
-
-
-        // Add each company as an option.
-        for (
-            var i = 0;
-            i < companyNames.length;
-            i++
-        ) {
-
-            this.select.option(
-                companyNames[i]
-            );
+        // Add each company as an option in the dropdown.
+        for (var i = 0; i < companyNames.length; i++) {
+            this.select.option(companyNames[i]);
         }
 
-
         // Select the first company by default.
-        this.select.selected(
-            companyNames[0]
-        );
+        this.select.selected(companyNames[0]);
+
+        /* End - own code */
     };
 
-
-    // ---------------------------------------------------------------
-    // Destroy
-    // ---------------------------------------------------------------
-
     this.destroy = function() {
+        /* Start - own code */
 
+        // Remove the dropdown when another visualisation is selected.
         if (this.select) {
             this.select.remove();
         }
+
+        /* End - own code */
     };
 
-
-    // ---------------------------------------------------------------
-    // Draw
-    // ---------------------------------------------------------------
-
     this.draw = function() {
-
         if (!this.loaded) {
             return;
         }
 
         background(255);
 
+        /* Start - own code */
 
-        // -----------------------------------------------------------
-        // Selected company
-        // -----------------------------------------------------------
+        // Get the company selected in the dropdown.
+        var companyName = this.select.value();
 
-        var companyName =
-            this.select.value();
+        // Get the race categories from the first CSV column.
+        var categories = this.data.getColumn(0);
 
-
-        // -----------------------------------------------------------
-        // Race categories
-        // -----------------------------------------------------------
-
-        // IMPORTANT:
-        // The first column of the CSV contains the race labels.
-        // It does not have a column name, so we access it by index.
-        var categories =
-            this.data.getColumn(0);
-
-
-        // -----------------------------------------------------------
-        // Company values
-        // -----------------------------------------------------------
-
+        // Store the values for the selected company.
         var values = [];
 
-        for (
-            var i = 0;
-            i < this.data.getRowCount();
-            i++
-        ) {
-
+        for (var i = 0; i < this.data.getRowCount(); i++) {
             values.push(
-                this.data.getNum(
-                    i,
-                    companyName
-                )
+                this.data.getNum(i, companyName)
             );
         }
 
-
-        // -----------------------------------------------------------
-        // Title
-        // -----------------------------------------------------------
+        /* End - own code */
 
         fill(0);
         noStroke();
-
         textSize(20);
         textAlign(LEFT, TOP);
 
@@ -151,40 +102,26 @@ function TechDiversityRace() {
             25
         );
 
-
-        // Selected company.
         textSize(16);
-
         text(
             companyName,
             70,
             55
         );
 
-
-        // -----------------------------------------------------------
-        // Draw bars
-        // -----------------------------------------------------------
-
         var barHeight = 35;
         var startY = 100;
 
+        /* Start - own code */
 
-        for (
-            var i = 0;
-            i < categories.length;
-            i++
-        ) {
+        // Draw one bar for each race category.
+        for (var i = 0; i < categories.length; i++) {
 
-            var y =
-                startY +
-                i * (barHeight + 10);
+            var y = startY + i * (barHeight + 10);
 
-
-            // Race category label.
+            // Draw the category label.
             fill(0);
             noStroke();
-
             textSize(12);
             textAlign(LEFT, CENTER);
 
@@ -194,21 +131,17 @@ function TechDiversityRace() {
                 y + barHeight / 2
             );
 
+            // Convert the percentage value into a bar width.
+            var barWidth = map(
+                values[i],
+                0,
+                100,
+                0,
+                width - 300
+            );
 
-            // Calculate bar width.
-            var barWidth =
-                map(
-                    values[i],
-                    0,
-                    100,
-                    0,
-                    width - 300
-                );
-
-
-            // Draw bar.
+            // Draw the bar.
             fill(100, 150, 220);
-
             rect(
                 220,
                 y,
@@ -216,10 +149,8 @@ function TechDiversityRace() {
                 barHeight
             );
 
-
-            // Percentage.
+            // Display the percentage value.
             fill(0);
-
             textAlign(LEFT, CENTER);
 
             text(
@@ -228,5 +159,7 @@ function TechDiversityRace() {
                 y + barHeight / 2
             );
         }
+
+        /* End - own code */
     };
 }
