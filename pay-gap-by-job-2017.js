@@ -15,6 +15,14 @@ function PayGapByJob2017() {
   this.dotSizeMin = 8;
   this.dotSizeMax = 28;
 
+  /* Start - own code */
+
+  // Store the currently selected bubble.
+  this.selectedJob = null;
+
+  /* End - own code */
+
+
   // Preload...
   this.preload = function() {
     var self = this;
@@ -67,6 +75,9 @@ function PayGapByJob2017() {
     if (this.jobFilter) {
       this.jobFilter.remove();
     }
+
+    // Clear the selected bubble.
+    this.selectedJob = null;
 
     /* End - own code */
   };
@@ -127,19 +138,16 @@ function PayGapByJob2017() {
       20
     );
 
-    // Explain what the visualisation shows.
     textSize(12);
 
     text(
-      'Bubble size represents the number of jobs',
+      'Click a bubble to see job details',
       this.pad,
       48
     );
 
     /* End - own code */
 
-
-    /* Start - own code */
 
     // Draw the horizontal and vertical axes.
     stroke(0);
@@ -158,8 +166,6 @@ function PayGapByJob2017() {
       this.pad,
       height - this.pad
     );
-
-    /* End - own code */
 
 
     /* Start - own code */
@@ -242,7 +248,7 @@ function PayGapByJob2017() {
 
     /* Start - own code */
 
-    // Draw Y-axis tick labels from -20% to +20%.
+    // Draw Y-axis tick labels.
     textAlign(RIGHT, CENTER);
 
     for (
@@ -290,11 +296,11 @@ function PayGapByJob2017() {
 
     /* Start - own code */
 
-    // Find the smallest and largest job counts.
+    // Find the smallest and largest number of jobs.
     var numJobsMin = min(numJobs);
     var numJobsMax = max(numJobs);
 
-    // Draw one bubble for each job.
+    // Draw each job as a bubble.
     for (
       var i = 0;
       i < jobs.length;
@@ -316,7 +322,7 @@ function PayGapByJob2017() {
         continue;
       }
 
-      // Convert the data values into screen positions.
+      // Convert the data values into graph positions.
       var x =
         map(
           propFemale[i],
@@ -335,8 +341,7 @@ function PayGapByJob2017() {
           this.pad + 20
         );
 
-      // Scale the number of jobs into a sensible
-      // bubble size.
+      // Scale the number of jobs into a bubble size.
       var size =
         map(
           numJobs[i],
@@ -346,11 +351,22 @@ function PayGapByJob2017() {
           this.dotSizeMax
         );
 
-      // Draw the bubble.
-      fill(100, 150, 220, 180);
-      stroke(0);
-      strokeWeight(1);
+      // Check whether this bubble is selected.
+      var isSelected =
+        this.selectedJob != null &&
+        this.selectedJob.index == i;
 
+      if (isSelected) {
+        fill(255, 180, 0);
+        stroke(0);
+        strokeWeight(3);
+      } else {
+        fill(100, 150, 220, 180);
+        stroke(0);
+        strokeWeight(1);
+      }
+
+      // Draw the bubble.
       ellipse(
         x,
         y,
@@ -358,19 +374,194 @@ function PayGapByJob2017() {
         size
       );
 
-      // Add the job name beside the bubble.
-      fill(0);
-      noStroke();
-      textAlign(LEFT, CENTER);
-      textSize(9);
+      /* Start - own code */
 
-      text(
-        jobs[i],
-        x + size / 2 + 4,
-        y
-      );
+      // Display the selected job's information.
+      if (isSelected) {
+
+        var boxWidth = 280;
+        var boxHeight = 115;
+
+        var boxX = x + 15;
+        var boxY = y - 50;
+
+        // Keep the information box inside the canvas.
+        if (boxX + boxWidth > width - 10) {
+          boxX = x - boxWidth - 15;
+        }
+
+        if (boxY < 10) {
+          boxY = 10;
+        }
+
+        if (boxY + boxHeight > height - 10) {
+          boxY = height - boxHeight - 10;
+        }
+
+        // Draw the information box.
+        fill(255);
+        stroke(0);
+        strokeWeight(1);
+
+        rect(
+          boxX,
+          boxY,
+          boxWidth,
+          boxHeight
+        );
+
+        // Draw the job information.
+        fill(0);
+        noStroke();
+        textAlign(LEFT, TOP);
+        textSize(12);
+
+        text(
+          'Job: ' + jobs[i],
+          boxX + 10,
+          boxY + 10,
+          boxWidth - 20
+        );
+
+        text(
+          'Female employees: ' +
+          nf(propFemale[i], 1, 1) + '%',
+          boxX + 10,
+          boxY + 40
+        );
+
+        text(
+          'Pay gap: ' +
+          nf(payGap[i], 1, 1) + '%',
+          boxX + 10,
+          boxY + 60
+        );
+
+        text(
+          'Number of jobs: ' +
+          nf(numJobs[i], 1, 0),
+          boxX + 10,
+          boxY + 80
+        );
+      }
+
+      /* End - own code */
     }
 
     /* End - own code */
   };
+
+
+  /* Start - own code */
+
+  // Detect when the user clicks on a bubble.
+  this.mousePressed = function() {
+
+    if (!this.loaded) {
+      return;
+    }
+
+    var jobs =
+      this.data.getColumn('job_subtype');
+
+    var propFemale =
+      stringsToNumbers(
+        this.data.getColumn('proportion_female')
+      );
+
+    var payGap =
+      stringsToNumbers(
+        this.data.getColumn('pay_gap')
+      );
+
+    var numJobs =
+      stringsToNumbers(
+        this.data.getColumn('num_jobs')
+      );
+
+    var filter = 'all';
+
+    if (this.jobFilter) {
+      filter = this.jobFilter.value();
+    }
+
+    var numJobsMin = min(numJobs);
+    var numJobsMax = max(numJobs);
+
+    // Check each bubble to see whether it was clicked.
+    for (
+      var i = 0;
+      i < jobs.length;
+      i++
+    ) {
+
+      // Respect the current filter.
+      if (
+        filter == 'female' &&
+        propFemale[i] < 50
+      ) {
+        continue;
+      }
+
+      if (
+        filter == 'male' &&
+        propFemale[i] >= 50
+      ) {
+        continue;
+      }
+
+      var x =
+        map(
+          propFemale[i],
+          0,
+          100,
+          this.pad,
+          width - this.pad
+        );
+
+      var y =
+        map(
+          payGap[i],
+          -20,
+          20,
+          height - this.pad,
+          this.pad + 20
+        );
+
+      var size =
+        map(
+          numJobs[i],
+          numJobsMin,
+          numJobsMax,
+          this.dotSizeMin,
+          this.dotSizeMax
+        );
+
+      // Calculate the distance between the mouse
+      // and the centre of the bubble.
+      var distance =
+        dist(
+          mouseX,
+          mouseY,
+          x,
+          y
+        );
+
+      // If the click is inside the bubble,
+      // select that job.
+      if (distance <= size / 2) {
+
+        this.selectedJob = {
+          index: i
+        };
+
+        return;
+      }
+    }
+
+    // Clicking anywhere else clears the selection.
+    this.selectedJob = null;
+  };
+
+  /* End - own code */
 }
