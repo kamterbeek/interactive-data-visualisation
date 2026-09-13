@@ -34,6 +34,7 @@ function setup() {
   /* End - own code */
 }
 
+
 function draw() {
   background(255);
 
@@ -41,3 +42,20 @@ function draw() {
     gallery.selectedVisual.draw();
   }
 }
+
+
+/* Start - own code */
+
+// Pass mouse clicks to the currently selected visualisation.
+function mousePressed() {
+
+  if (
+    gallery != null &&
+    gallery.selectedVisual != null &&
+    gallery.selectedVisual.hasOwnProperty('mousePressed')
+  ) {
+    gallery.selectedVisual.mousePressed();
+  }
+}
+
+/* End - own code */
