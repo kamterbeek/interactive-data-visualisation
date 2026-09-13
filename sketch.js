@@ -1,23 +1,26 @@
 // Global variable to store the gallery object.
 var gallery;
 
+
 function setup() {
 
-    // Create a canvas to fill the content div from index.html.
+    // Create the canvas.
     var c = createCanvas(1024, 576);
     c.parent('app');
 
-    // Create a new gallery object.
+    // Create the Gallery object.
     gallery = new Gallery();
 
-    // Add the visualisation objects.
+    // Add all five visualisations to the gallery.
     gallery.addVisual(new TechDiversityRace());
     gallery.addVisual(new TechDiversityGender());
     gallery.addVisual(new PayGapByJob2017());
     gallery.addVisual(new PayGapTimeSeries());
     gallery.addVisual(new ClimateChange());
 
-    // Connect the visualisation dropdown to the Gallery.
+
+    // Connect the visualisation dropdown
+    // in index.html to the Gallery.
     var graphSelect = document.getElementById('graphSelect');
 
     if (graphSelect) {
@@ -26,21 +29,20 @@ function setup() {
 
             var selectedGraph = this.value;
 
+            // Only change visualisation if the user
+            // has selected an option.
             if (selectedGraph != "") {
+
                 gallery.selectVisual(selectedGraph);
             }
         });
-
-        // Select the visualisation shown in the dropdown when
-        // the page first loads.
-        if (graphSelect.value != "") {
-            gallery.selectVisual(graphSelect.value);
-        }
     }
 }
 
+
 function draw() {
 
+    // Clear the canvas.
     background(255);
 
     // Draw the currently selected visualisation.
@@ -48,6 +50,7 @@ function draw() {
         gallery != null &&
         gallery.selectedVisual != null
     ) {
+
         gallery.selectedVisual.draw();
     }
 }
