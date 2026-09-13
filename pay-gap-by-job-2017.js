@@ -6,16 +6,16 @@ function PayGapByJob2017() {
     this.loaded = false;
 
 
-    // ------------------------------------------------------------
+    // ---------------------------------------------------------------
     // Load the data
-    // ------------------------------------------------------------
+    // ---------------------------------------------------------------
 
     this.preload = function() {
 
         var self = this;
 
         this.data = loadTable(
-            './data/pay-gap-by-job-2017.csv',
+            './data/pay-gap/occupation-hourly-pay-by-gender-2017.csv',
             'csv',
             'header',
             function(table) {
@@ -25,9 +25,9 @@ function PayGapByJob2017() {
     };
 
 
-    // ------------------------------------------------------------
-    // Set up the visualisation
-    // ------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // Setup
+    // ---------------------------------------------------------------
 
     this.setup = function() {
 
@@ -35,17 +35,13 @@ function PayGapByJob2017() {
             return;
         }
 
-
         // Create the job filter dropdown.
         this.jobFilter = createSelect();
 
-
-        // Put it inside the dashboard controls area.
+        // Put the dropdown into the dashboard controls area.
         this.jobFilter.parent('visualControls');
 
-        // Position it at the beginning of the controls area.
         this.jobFilter.position(0, 5);
-
 
         // Add filter options.
         this.jobFilter.option(
@@ -63,23 +59,21 @@ function PayGapByJob2017() {
             'male'
         );
 
-
-        // Select "All jobs" by default.
+        // Select all jobs by default.
         this.jobFilter.selected('all');
 
-
-        // Redraw when the filter changes.
         var self = this;
 
+        // Redraw when the filter changes.
         this.jobFilter.changed(function() {
             self.draw();
         });
     };
 
 
-    // ------------------------------------------------------------
-    // Remove the dropdown when another graph is selected
-    // ------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // Destroy
+    // ---------------------------------------------------------------
 
     this.destroy = function() {
 
@@ -89,9 +83,9 @@ function PayGapByJob2017() {
     };
 
 
-    // ------------------------------------------------------------
-    // Draw the visualisation
-    // ------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // Draw
+    // ---------------------------------------------------------------
 
     this.draw = function() {
 
@@ -99,58 +93,60 @@ function PayGapByJob2017() {
             return;
         }
 
-
         background(255);
 
 
-        // --------------------------------------------------------
+        // -----------------------------------------------------------
         // Title
-        // --------------------------------------------------------
+        // -----------------------------------------------------------
 
         fill(0);
         noStroke();
 
         textSize(20);
+        textAlign(LEFT, TOP);
 
         text(
             'Pay Gap by Job - 2017',
             70,
-            30
+            25
         );
 
 
-        // --------------------------------------------------------
-        // Get the data
-        // --------------------------------------------------------
+        // -----------------------------------------------------------
+        // Get data
+        // -----------------------------------------------------------
 
-        var propFemale = this.data.getColumn(
-            'proportion_female'
-        );
+        var propFemale =
+            this.data.getColumn('proportion_female');
 
-        var payGap = this.data.getColumn(
-            'pay_gap'
-        );
+        var payGap =
+            this.data.getColumn('pay_gap');
 
-        var numJobs = this.data.getColumn(
-            'num_jobs'
-        );
+        var numJobs =
+            this.data.getColumn('num_jobs');
 
 
-        // Convert strings into numbers.
-        propFemale = stringsToNumbers(propFemale);
-        payGap = stringsToNumbers(payGap);
-        numJobs = stringsToNumbers(numJobs);
+        // Convert values to numbers.
+        propFemale =
+            stringsToNumbers(propFemale);
+
+        payGap =
+            stringsToNumbers(payGap);
+
+        numJobs =
+            stringsToNumbers(numJobs);
 
 
-        // Find the minimum and maximum number of jobs.
-        var numJobsMin = min(numJobs);
-        var numJobsMax = max(numJobs);
+        // Find minimum and maximum number of jobs.
+        var numJobsMin =
+            min(numJobs);
+
+        var numJobsMax =
+            max(numJobs);
 
 
-        // --------------------------------------------------------
-        // Get the selected filter
-        // --------------------------------------------------------
-
+        // Get selected filter.
         var filter = 'all';
 
         if (this.jobFilter) {
@@ -158,14 +154,17 @@ function PayGapByJob2017() {
         }
 
 
-        // --------------------------------------------------------
-        // Draw the data points
-        // --------------------------------------------------------
+        // -----------------------------------------------------------
+        // Draw data points
+        // -----------------------------------------------------------
 
-        for (var i = 0; i < propFemale.length; i++) {
+        for (
+            var i = 0;
+            i < propFemale.length;
+            i++
+        ) {
 
-
-            // Female-dominated filter.
+            // Female-dominated jobs.
             if (
                 filter == 'female' &&
                 propFemale[i] < 50
@@ -174,7 +173,7 @@ function PayGapByJob2017() {
             }
 
 
-            // Male-dominated filter.
+            // Male-dominated jobs.
             if (
                 filter == 'male' &&
                 propFemale[i] >= 50
@@ -183,8 +182,8 @@ function PayGapByJob2017() {
             }
 
 
-            // Map percentage of female employees
-            // to the x-axis.
+            // X position:
+            // percentage of employees who are female.
             var x = map(
                 propFemale[i],
                 0,
@@ -194,7 +193,8 @@ function PayGapByJob2017() {
             );
 
 
-            // Map pay gap to the y-axis.
+            // Y position:
+            // pay gap.
             var y = map(
                 payGap[i],
                 -20,
@@ -204,7 +204,8 @@ function PayGapByJob2017() {
             );
 
 
-            // Map number of jobs to the size of the dot.
+            // Size:
+            // number of jobs.
             var size = map(
                 numJobs[i],
                 numJobsMin,
@@ -214,7 +215,7 @@ function PayGapByJob2017() {
             );
 
 
-            // Draw the data point.
+            // Draw point.
             fill(100);
             noStroke();
 
@@ -227,15 +228,14 @@ function PayGapByJob2017() {
         }
 
 
-        // --------------------------------------------------------
-        // Draw axes
-        // --------------------------------------------------------
+        // -----------------------------------------------------------
+        // Axes
+        // -----------------------------------------------------------
 
         stroke(0);
         strokeWeight(1);
 
-
-        // X-axis
+        // X-axis.
         line(
             70,
             height - 70,
@@ -243,8 +243,7 @@ function PayGapByJob2017() {
             height - 70
         );
 
-
-        // Y-axis
+        // Y-axis.
         line(
             70,
             70,
@@ -253,20 +252,20 @@ function PayGapByJob2017() {
         );
 
 
-        // --------------------------------------------------------
+        // -----------------------------------------------------------
         // Axis labels
-        // --------------------------------------------------------
+        // -----------------------------------------------------------
 
         fill(0);
         noStroke();
 
         textSize(12);
-
+        textAlign(CENTER, CENTER);
 
         // X-axis label.
         text(
             'Female employees (%)',
-            width / 2 - 60,
+            width / 2,
             height - 30
         );
 
@@ -290,43 +289,83 @@ function PayGapByJob2017() {
         pop();
 
 
-        // --------------------------------------------------------
-        // X-axis values
-        // --------------------------------------------------------
+        // -----------------------------------------------------------
+        // X-axis tick labels
+        // -----------------------------------------------------------
+
+        textAlign(CENTER, CENTER);
 
         text(
             '0%',
-            65,
-            height - 55
+            70,
+            height - 50
+        );
+
+        text(
+            '20%',
+            map(20, 0, 100, 70, width - 40),
+            height - 50
+        );
+
+        text(
+            '40%',
+            map(40, 0, 100, 70, width - 40),
+            height - 50
+        );
+
+        text(
+            '60%',
+            map(60, 0, 100, 70, width - 40),
+            height - 50
+        );
+
+        text(
+            '80%',
+            map(80, 0, 100, 70, width - 40),
+            height - 50
         );
 
         text(
             '100%',
-            width - 65,
-            height - 55
+            width - 40,
+            height - 50
         );
 
 
-        // --------------------------------------------------------
-        // Y-axis values
-        // --------------------------------------------------------
+        // -----------------------------------------------------------
+        // Y-axis tick labels
+        // -----------------------------------------------------------
+
+        textAlign(RIGHT, CENTER);
 
         text(
             '+20%',
-            35,
-            75
+            60,
+            70
+        );
+
+        text(
+            '+10%',
+            60,
+            map(10, -20, 20, height - 70, 70)
         );
 
         text(
             '0%',
-            45,
-            height / 2
+            60,
+            map(0, -20, 20, height - 70, 70)
+        );
+
+        text(
+            '-10%',
+            60,
+            map(-10, -20, 20, height - 70, 70)
         );
 
         text(
             '-20%',
-            35,
-            height - 75
+            60,
+            height - 70
         );
     };
 }
