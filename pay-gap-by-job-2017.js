@@ -376,7 +376,7 @@ function PayGapByJob2017() {
 
       /* Start - own code */
 
-      // Display the selected job's information.
+      // Display information only for the selected bubble.
       if (isSelected) {
 
         var boxWidth = 280;
@@ -410,7 +410,7 @@ function PayGapByJob2017() {
           boxHeight
         );
 
-        // Draw the job information.
+        // Display the selected job's information.
         fill(0);
         noStroke();
         textAlign(LEFT, TOP);
@@ -454,7 +454,7 @@ function PayGapByJob2017() {
 
   /* Start - own code */
 
-  // Detect when the user clicks on a bubble.
+  // Handle clicks on the p5 canvas.
   this.mousePressed = function() {
 
     if (!this.loaded) {
@@ -488,7 +488,7 @@ function PayGapByJob2017() {
     var numJobsMin = min(numJobs);
     var numJobsMax = max(numJobs);
 
-    // Check each bubble to see whether it was clicked.
+    // Check each bubble for a click.
     for (
       var i = 0;
       i < jobs.length;
@@ -537,8 +537,8 @@ function PayGapByJob2017() {
           this.dotSizeMax
         );
 
-      // Calculate the distance between the mouse
-      // and the centre of the bubble.
+      // Calculate the distance from the mouse
+      // to the centre of the bubble.
       var distance =
         dist(
           mouseX,
@@ -547,9 +547,11 @@ function PayGapByJob2017() {
           y
         );
 
-      // If the click is inside the bubble,
-      // select that job.
-      if (distance <= size / 2) {
+      /* Start - own code */
+
+      // Add an invisible 8-pixel click area around
+      // each bubble to make small bubbles easier to select.
+      if (distance <= size / 2 + 8) {
 
         this.selectedJob = {
           index: i
@@ -557,9 +559,11 @@ function PayGapByJob2017() {
 
         return;
       }
+
+      /* End - own code */
     }
 
-    // Clicking anywhere else clears the selection.
+    // Clicking elsewhere clears the selection.
     this.selectedJob = null;
   };
 
