@@ -11,101 +11,99 @@ function PayGapByJob2017() {
   this.loaded = false;
 
   // Graph properties.
-  this.pad = 20;
-  this.dotSizeMin = 15;
-  this.dotSizeMax = 40;
+  this.pad = 60;
+  this.dotSizeMin = 8;
+  this.dotSizeMax = 28;
 
-  // Preload the data. This function is called automatically by the
-  // gallery when a visualisation is added.
+  // Preload...
   this.preload = function() {
     var self = this;
+
     this.data = loadTable(
-      './data/pay-gap/occupation-hourly-pay-by-gender-2017.csv', 'csv', 'header',
-      // Callback function to set the value
-      // this.loaded to true.
+      './data/pay-gap/occupation-hourly-pay-by-gender-2017.csv',
+      'csv',
+      'header',
       function(table) {
         self.loaded = true;
-      });
-
+      }
+    );
   };
 
-  /* Start - own code */
 
-  // Create a dropdown filter so users can select which jobs to display.
   this.setup = function() {
-    if (!this.loaded) return;
 
+    if (!this.loaded) {
+      return;
+    }
+
+    /* Start - own code */
+
+    // Create a filter so users can choose which jobs to display.
     this.jobFilter = createSelect();
     this.jobFilter.parent('visualControls');
     this.jobFilter.position(0, 5);
 
     this.jobFilter.option('All jobs', 'all');
-    this.jobFilter.option('Female-dominated jobs', 'female');
-    this.jobFilter.option('Male-dominated jobs', 'male');
+    this.jobFilter.option(
+      'Female-dominated jobs',
+      'female'
+    );
+    this.jobFilter.option(
+      'Male-dominated jobs',
+      'male'
+    );
 
     this.jobFilter.selected('all');
 
-    var self = this;
-
-    this.jobFilter.changed(function() {
-      self.draw();
-    });
+    /* End - own code */
   };
 
-  // Remove the filter when another visualisation is selected.
+
   this.destroy = function() {
+
+    /* Start - own code */
+
+    // Remove the filter when another visualisation is selected.
     if (this.jobFilter) {
       this.jobFilter.remove();
     }
+
+    /* End - own code */
   };
 
-  /* End - own code */
 
   this.draw = function() {
+
     if (!this.loaded) {
       console.log('Data not yet loaded');
       return;
     }
 
-    // Draw the axes.
-    this.addAxes();
+    background(255);
 
-    // Get data from the table object.
-    var jobs = this.data.getColumn('job_subtype');
-    var propFemale = this.data.getColumn('proportion_female');
-    var payGap = this.data.getColumn('pay_gap');
-    var numJobs = this.data.getColumn('num_jobs');
-
-    // Convert numerical data from strings to numbers.
-    propFemale = stringsToNumbers(propFemale);
-    payGap = stringsToNumbers(payGap);
-    numJobs = stringsToNumbers(numJobs);
-
-    // Set ranges for axes.
-    //
-    // Use full 100% for x-axis (proportion of women in roles).
-    var propFemaleMin = 0;
-    var propFemaleMax = 100;
-
-    // For y-axis (pay gap) use a symmetrical axis equal to the
-    // largest gap direction so that equal pay (0% pay gap) is in the
-    // centre of the canvas. Above the line means men are paid
-    // more. Below the line means women are paid more.
-    var payGapMin = -20;
-    var payGapMax = 20;
-
-    // Find smallest and largest numbers of people across all
-    // categories to scale the size of the dots.
-    var numJobsMin = min(numJobs);
-    var numJobsMax = max(numJobs);
-
-    fill(255);
-    stroke(0);
-    strokeWeight(1);
 
     /* Start - own code */
 
-    // Get the selected filter value.
+    // Get the data needed for the scatter plot.
+    var jobs =
+      this.data.getColumn('job_subtype');
+
+    var propFemale =
+      stringsToNumbers(
+        this.data.getColumn('proportion_female')
+      );
+
+    var payGap =
+      stringsToNumbers(
+        this.data.getColumn('pay_gap')
+      );
+
+    var numJobs =
+      stringsToNumbers(
+        this.data.getColumn('num_jobs')
+      );
+
+    // Get the selected filter.
     var filter = 'all';
 
     if (this.jobFilter) {
@@ -114,66 +112,265 @@ function PayGapByJob2017() {
 
     /* End - own code */
 
-    for (var i = 0; i < this.data.getRowCount(); i++) {
 
-      /* Start - own code */
+    /* Start - own code */
+
+    // Draw the title.
+    fill(0);
+    noStroke();
+    textAlign(LEFT, TOP);
+    textSize(20);
+
+    text(
+      'Pay Gap by Job - 2017',
+      this.pad,
+      20
+    );
+
+    // Explain what the visualisation shows.
+    textSize(12);
+
+    text(
+      'Bubble size represents the number of jobs',
+      this.pad,
+      48
+    );
+
+    /* End - own code */
+
+
+    /* Start - own code */
+
+    // Draw the horizontal and vertical axes.
+    stroke(0);
+    strokeWeight(1);
+
+    line(
+      this.pad,
+      height - this.pad,
+      width - this.pad,
+      height - this.pad
+    );
+
+    line(
+      this.pad,
+      this.pad + 20,
+      this.pad,
+      height - this.pad
+    );
+
+    /* End - own code */
+
+
+    /* Start - own code */
+
+    // Draw the X-axis label.
+    fill(0);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    textSize(14);
+
+    text(
+      'Female employees (%)',
+      width / 2,
+      height - 20
+    );
+
+    // Draw the Y-axis label.
+    push();
+
+    translate(
+      18,
+      height / 2
+    );
+
+    rotate(-HALF_PI);
+
+    text(
+      'Pay gap (%)',
+      0,
+      0
+    );
+
+    pop();
+
+    /* End - own code */
+
+
+    /* Start - own code */
+
+    // Draw X-axis tick labels.
+    textSize(11);
+    textAlign(CENTER, TOP);
+
+    for (
+      var xValue = 0;
+      xValue <= 100;
+      xValue += 20
+    ) {
+
+      var x =
+        map(
+          xValue,
+          0,
+          100,
+          this.pad,
+          width - this.pad
+        );
+
+      stroke(220);
+
+      line(
+        x,
+        this.pad + 20,
+        x,
+        height - this.pad
+      );
+
+      fill(0);
+      noStroke();
+
+      text(
+        xValue + '%',
+        x,
+        height - this.pad + 8
+      );
+    }
+
+    /* End - own code */
+
+
+    /* Start - own code */
+
+    // Draw Y-axis tick labels from -20% to +20%.
+    textAlign(RIGHT, CENTER);
+
+    for (
+      var yValue = -20;
+      yValue <= 20;
+      yValue += 5
+    ) {
+
+      var y =
+        map(
+          yValue,
+          -20,
+          20,
+          height - this.pad,
+          this.pad + 20
+        );
+
+      stroke(220);
+
+      line(
+        this.pad,
+        y,
+        width - this.pad,
+        y
+      );
+
+      fill(0);
+      noStroke();
+
+      var label = yValue + '%';
+
+      if (yValue > 0) {
+        label = '+' + yValue + '%';
+      }
+
+      text(
+        label,
+        this.pad - 8,
+        y
+      );
+    }
+
+    /* End - own code */
+
+
+    /* Start - own code */
+
+    // Find the smallest and largest job counts.
+    var numJobsMin = min(numJobs);
+    var numJobsMax = max(numJobs);
+
+    // Draw one bubble for each job.
+    for (
+      var i = 0;
+      i < jobs.length;
+      i++
+    ) {
 
       // Apply the selected job filter.
-      if (filter == 'female' && propFemale[i] < 50) {
+      if (
+        filter == 'female' &&
+        propFemale[i] < 50
+      ) {
         continue;
       }
 
-      if (filter == 'male' && propFemale[i] >= 50) {
+      if (
+        filter == 'male' &&
+        propFemale[i] >= 50
+      ) {
         continue;
       }
 
-      // Map the percentage of female employees to the x position.
-      var x = map(
-        propFemale[i],
-        propFemaleMin,
-        propFemaleMax,
-        this.pad,
-        width - this.pad
+      // Convert the data values into screen positions.
+      var x =
+        map(
+          propFemale[i],
+          0,
+          100,
+          this.pad,
+          width - this.pad
+        );
+
+      var y =
+        map(
+          payGap[i],
+          -20,
+          20,
+          height - this.pad,
+          this.pad + 20
+        );
+
+      // Scale the number of jobs into a sensible
+      // bubble size.
+      var size =
+        map(
+          numJobs[i],
+          numJobsMin,
+          numJobsMax,
+          this.dotSizeMin,
+          this.dotSizeMax
+        );
+
+      // Draw the bubble.
+      fill(100, 150, 220, 180);
+      stroke(0);
+      strokeWeight(1);
+
+      ellipse(
+        x,
+        y,
+        size,
+        size
       );
 
-      // Map the pay gap to the y position.
-      var y = map(
-        payGap[i],
-        payGapMin,
-        payGapMax,
-        height - this.pad,
-        this.pad
+      // Add the job name beside the bubble.
+      fill(0);
+      noStroke();
+      textAlign(LEFT, CENTER);
+      textSize(9);
+
+      text(
+        jobs[i],
+        x + size / 2 + 4,
+        y
       );
-
-      // Scale the number of jobs to determine the dot size.
-      var size = map(
-        numJobs[i],
-        numJobsMin,
-        numJobsMax,
-        this.dotSizeMin,
-        this.dotSizeMax
-      );
-
-      // Draw the job as a circle.
-      ellipse(x, y, size, size);
-
-      /* End - own code */
     }
-  };
 
-  this.addAxes = function () {
-    stroke(200);
-
-    // Add vertical line.
-    line(width / 2,
-         0 + this.pad,
-         width / 2,
-         height - this.pad);
-
-    // Add horizontal line.
-    line(0 + this.pad,
-         height / 2,
-         width - this.pad,
-         height / 2);
+    /* End - own code */
   };
 }
