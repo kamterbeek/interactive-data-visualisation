@@ -1,16 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Data Visualisation Dashboard</title>
 
-    <link rel="stylesheet" href="style.css">
-
-    <!-- p5.js -->
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.js"></script>
 
-    <!-- Main program -->
     <script src="sketch.js"></script>
 
     <!-- Visualisations -->
@@ -24,20 +22,29 @@
     <script src="helper-functions.js"></script>
     <script src="gallery.js"></script>
     <script src="pie-chart.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
     <header>
+
         <h1>Data Visualisation Dashboard</h1>
 
+        <!-- Main visualisation selector -->
         <div id="controls">
+
             <label for="graphSelect">
                 Select visualisation:
             </label>
 
             <select id="graphSelect">
-                <option value="">Select a visualisation</option>
+
+                <option value="">
+                    Select a visualisation
+                </option>
 
                 <option value="tech-diversity-race">
                     Tech Diversity: Race
@@ -58,19 +65,31 @@
                 <option value="climate-change">
                     Climate Change
                 </option>
+
             </select>
+
         </div>
+
+        <!--
+            Individual visualisations can place their
+            controls here, such as filters and sliders.
+        -->
+        <div id="visualControls"></div>
+
     </header>
 
+
     <!--
-        The original Gallery class expects this menu to exist.
-        It is hidden because the new dropdown above is being used
-        as the main navigation.
+        The original Gallery expects this element.
+        We keep it in the page but hide it because
+        the dashboard dropdown is now the main selector.
     -->
     <ul id="visuals-menu" style="display: none;"></ul>
 
-    <!-- p5.js canvas is placed here -->
+
+    <!-- p5.js canvas -->
     <main id="app"></main>
 
 </body>
+
 </html>
