@@ -46,7 +46,6 @@ function setup() {
   /* End - own code */
 }
 
-
 function draw() {
   background(255);
 
