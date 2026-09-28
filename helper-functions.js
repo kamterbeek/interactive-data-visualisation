@@ -159,5 +159,4 @@ function calculateStats(data) {
     mean: mean(data)
   };
 }
-
 /* End - own code */
