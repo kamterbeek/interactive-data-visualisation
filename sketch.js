@@ -1,4 +1,3 @@
-// Global variable to store the gallery object.
 var gallery;
 
 function setup() {
