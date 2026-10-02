@@ -11,7 +11,7 @@ function ClimateChange() {
   this.yAxisLabel = '℃';
 
   var marginSize = 35;
-
+  
   // Layout object to store all common plot layout parameters and methods.
     
     this.layout = {
