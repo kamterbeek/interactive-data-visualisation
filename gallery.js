@@ -13,7 +13,7 @@ function Gallery() {
     if (this.findVisIndex(vis.id) != null) {
       alert(`Vis '${vis.name}' has a duplicate id: '${vis.id}'`);
     }
-
+    
     this.visuals.push(vis);
 
     var menuItem = createElement('li', vis.name);
