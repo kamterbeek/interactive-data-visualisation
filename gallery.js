@@ -57,7 +57,6 @@ function Gallery() {
         return i;
       }
     }
-
     return null;
   };
 
