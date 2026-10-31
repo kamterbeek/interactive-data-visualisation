@@ -61,7 +61,6 @@ function Gallery() {
     return null;
   };
 
-
   this.selectVisual = function(visId) {
 
     var visIndex = this.findVisIndex(visId);
